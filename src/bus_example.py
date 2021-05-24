@@ -46,5 +46,5 @@ class Passenger:
     def __init__(self, name):
         self.name = name
 
-
+print("Hello world")
 # def generate_passenger(station):
