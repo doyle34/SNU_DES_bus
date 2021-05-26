@@ -58,11 +58,16 @@ class Bus:
         # after passengers get off, new passengers board
         # print(f'passengers starts boarding at {station.name}: {self.env.now}')
         while station.boarding_queue.items:
-            with station.boarding_queue.get() as st_get:
-                passenger_now = yield st_get
-                with self.passengers.put(passenger_now) as psn_put:
-                    yield psn_put
-                    temp_cnt += 1
+            if len(self.passengers.items) <= self.passengers.capacity:  # if there is available room in bus
+                with station.boarding_queue.get() as st_get:
+                    passenger_now = yield st_get
+                    with self.passengers.put(passenger_now) as psn_put:
+                        yield psn_put
+                        temp_cnt += 1
+            else:   # if bus is full
+                current_len = len(station.boarding_queue.items)
+                while len(station.boarding_queue.items) < current_len / 2:
+                    yield station.boarding_queue.get()  # half of passengers in boarding queue leaves
 
         print(f'{temp_cnt} passengers board at {station.name}: {self.env.now}')
 
