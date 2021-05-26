@@ -20,6 +20,8 @@ bus inter-arrival time == bus_iat: 버스가 정류장 사이를 운행하는 �
 bus_iat_dist_list[i]은 station[i - 1]에서 station[i] 까지 걸리는 시간에 대한 분포임
 i = 0일때는 버스가 출발하고 0번째 station 에 도착하는 시간을 의미
 
+Passenger naming rule:
+S{i}P{j}: station[i]의 j번째 passenger
 
 simpy.Store() class
 items: list of items
@@ -101,7 +103,8 @@ class Station:
         while True:
             yield self.env.timeout(normalvariate(self.psn_iat_dist[0], self.psn_iat_dist[1]))
             # new passenger arrives at this station
-            passenger = Passenger('Passenger %i' % psn_cnt)
+            psn_code = 'P' + str(psn_cnt).zfill(3)
+            passenger = Passenger(self.name + psn_code)
             yield self.boarding_queue.put(passenger)
             # print(f"{len(self.boarding_queue.items)} passengers waiting at {self.name}: {round(self.env.now, 2)}")
             psn_cnt += 1
@@ -130,7 +133,7 @@ psn_idt_dist_list = [np.array([1, 0]) for i in range(n_stations)]
 bus_iat_dist_list = [np.array([5, 0]) for i in range(n_stations)]
 
 env = simpy.Environment()
-stations = [Station(env, 'Station %i' % i, piat, pidt)
+stations = [Station(env, f'S{i}', piat, pidt)
             for i, (piat, pidt) in enumerate(zip(psn_iat_dist_list, psn_idt_dist_list))]
 bus = Bus(env, bus_capacity, stations, bus_iat_dist_list)
 
