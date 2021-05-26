@@ -23,8 +23,10 @@ bus inter-arrival time == bus_iat: 버스가 정류장 사이를 운행하는 �
 bus_iat_dist_list[i]은 station[i - 1]에서 station[i] 까지 걸리는 시간에 대한 분포임
 i = 0일때는 버스가 출발하고 0번째 station 에 도착하는 시간을 의미
 
-Passenger naming rule:
-S{i}P{j}: station[i]의 j번째 passenger
+naming rule:
+    Bus: B{i}
+    Station: S{i}
+    Passenger: S{i}P{j}: station[i]의 j번째 passenger
 
 simpy.Store() class
 items: list of items
@@ -34,5 +36,4 @@ get(): request to get an item in store
 put(), get()은 request 이므로 yield 할 시에 함수가 실행될 때 까지 진행되지 않음
 store 의 capacity 가 무한하면 yield put() 을 해도 아무 문제 없음.
 그러나 빈 store 에서 yield get() 을 할 경우 코드 진행이 멈춤에 주의
-get(), put() 또한 request 의 일종이니 with ~ as ~: 구문을 사용해야 함 (확실하지않음)
 ```
