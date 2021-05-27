@@ -2,6 +2,8 @@
 
 ## TODO
 통계치 산출 방법 <br/>
+* passenger waiting time
+* bus driving time
 실제 데이터 import 방법 (via csv / manual copy & paste) <br/>
 
 
