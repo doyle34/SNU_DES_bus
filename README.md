@@ -6,7 +6,20 @@
 * bus driving time <br/>
 
 실제 데이터 import 방법 (via csv / manual copy & paste) <br/>
+import from csv <br/>
 
+* psn_iat_dist_list: list of passenger arrival time distribution (mean, std) for each stations. <br/>
+정류장 별 승차 인원 / 정류장에 도착하는 버스 시간 간격
+
+* psn_idt_dist_list: list of passenger departure time distribution (mean, std) for each stations. <br/>
+정류장 별 하차 인원 / 정류장에 도착하는 버스 시간 간격 <br/>
+
+* bus_iat_dist_list: bus IAT distribution (mean, std) between stations <br/>
+정류장 간 버스 운행 시간 <br/>
+
+* bus_idt_dist: bus inter-dispatch time distribution (mean, std)<br/> 
+버스가 system에 추가되는 시간 간격 <br/> 
+총 버스 대수 / 적당한 시간 간격 <br/>
 
 ### word definition and miscellaneous guide
 
@@ -39,4 +52,6 @@ get(): request to get an item in store
 put(), get()은 request 이므로 yield 할 시에 함수가 실행될 때 까지 진행되지 않음
 store 의 capacity 가 무한하면 yield put() 을 해도 아무 문제 없음.
 그러나 빈 store 에서 yield get() 을 할 경우 코드 진행이 멈춤에 주의
+
+
 ```
