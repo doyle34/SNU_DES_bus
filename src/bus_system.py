@@ -16,10 +16,13 @@ class Bus:
     def arrive(self, station):
         # bus arrives at a station, and passengers get off
         temp_cnt = 0
-        for i in range(station.n_psn_depart):
-            if self.passengers.items:
-                with self.passengers.get() as psn_get:
-                    yield psn_get
+        if station.is_terminal:  # if bus arrived at terminal
+            while self.passengers.items:
+                yield self.passengers.get()
+        else:
+            for i in range(station.n_psn_depart):
+                if self.passengers.items:
+                    yield self.passengers.get()
                     temp_cnt += 1
 
         print(f'{temp_cnt} passengers get off from {self.name} at {station.name}: {self.env.now}')
@@ -51,7 +54,7 @@ class Bus:
                 self.station_idx += 1
             # bus finishes driving for one cycle
             print(f'{self.name} finishes driving for one cycle')
-            yield self.env.timeout(5)  # wait 5 minute for next driving cycle
+            yield self.env.timeout(1)  # wait 1 minute for next driving cycle
             print(f'{self.name} returns to first station')
             self.station_idx = 0
 
@@ -60,6 +63,7 @@ class Station:
     def __init__(self, env, name, psn_iat_dist, psn_idt_dist):
         self.env = env
         self.name = name
+        self.is_terminal = False
         self.n_psn_depart = 0
         self.boarding_queue = simpy.Store(self.env)
         self.psn_iat_dist = psn_iat_dist

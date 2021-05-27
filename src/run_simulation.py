@@ -20,6 +20,7 @@ bus_idt_dist = np.array([10, 0])
 env = simpy.Environment()
 stations = [Station(env, f'S{i}', piat, pidt)
             for i, (piat, pidt) in enumerate(zip(psn_iat_dist_list, psn_idt_dist_list))]
+stations[-1].is_terminal = True
 buses = []
 env.process(generate_buses(env, bus_capacity, stations, bus_iat_dist_list, bus_idt_dist, n_bus, buses))
 env.run(until=SIM_TIME)
