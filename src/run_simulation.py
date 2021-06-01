@@ -21,8 +21,11 @@ bus_iat_dist_list = [np.array([bus_iat_df["average"][i], bus_iat_df["std"][i]]) 
 # bus inter-dispatch time distribution (mean, std)
 bus_idt_df = pd.read_csv("bus_data_v2/bus_idt.csv")
 bus_idt_dist_list = [np.array([bus_idt_df["mean"][i], bus_idt_df["std"][i]]) for i in range(18)]
-bus_idt_dist = np.array([bus_idt_df["mean"][18], bus_idt_df["std"][18]])
+
+# average value of one day
 # bus_idt_dist = np.array([10, 0])
+bus_idt_dist = np.array([bus_idt_df["mean"][18], bus_idt_df["std"][18]])
+
 
 env = simpy.Environment()
 stations = [Station(env, f'S{i}', piat, pidt)
