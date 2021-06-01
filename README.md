@@ -21,6 +21,13 @@ import from csv <br/>
 버스가 system에 추가되는 시간 간격 <br/> 
 총 버스 대수 / 적당한 시간 간격 <br/>
 
+csv 읽어오는 몇줄 추가 <br/>
+일단은 pandas로 csv 읽어온 다음 필요한 부분만 list로 변환 <br/>
+현재는 psn은 각 정류장별 일일 전체 평균값만 사용, 작동하는지 확인만 <br/>
+bus도 마찬가지로 마지막 행 또는 열에 일일 전체 평균 추가하여 사용 <br/>
+bus_idt는 정류장 상관없이 차고지에서 출발시만 필요하니 한줄만 남기고 지움, 행열 바꿔서 읽기 쉽게 <br/>
+시간대별로 바뀌는건 시험 뒤에? 방식은 고민중 <br/>
+
 ### word definition and miscellaneous guide
 
 ```
