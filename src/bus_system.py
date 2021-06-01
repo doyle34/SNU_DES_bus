@@ -2,6 +2,7 @@ import simpy
 from random import normalvariate, expovariate
 
 
+
 class Bus:
     def __init__(self, env, name, bus_cap, stations, iat_dist_list):
         self.env = env
