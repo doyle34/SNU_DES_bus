@@ -11,7 +11,7 @@ bus_capacity = 50
 SIM_TIME = 180
 
 #
-total_passengers = 0 ############################
+total_passengers = 0 ###########################
 total_driving_time = 0 ##########################
 
 # list of passenger arrival time distribution (mean, std) for each stations.

@@ -12,7 +12,7 @@ class Bus:
         self.psn_cnt = 0
         self.iat_dist = iat_dist_list
         self.driving_process = self.env.process(self.drive())
-        self.driving_time = 0 ####################################
+        self.driving_time = 0 ###################################
 
     def arrive(self, station):
         # bus arrives at a station, and passengers get off
