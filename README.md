@@ -28,6 +28,9 @@ bus도 마찬가지로 마지막 행 또는 열에 일일 전체 평균 추가�
 bus_idt는 정류장 상관없이 차고지에서 출발시만 필요하니 한줄만 남기고 지움, 행열 바꿔서 읽기 쉽게 <br/>
 시간대별로 바뀌는건 시험 뒤에? 방식은 고민중 <br/>
 
+버스 클래스에 driving time 추가 <br/>
+total passengers, total driving time 추가 <br/>
+
 ### word definition and miscellaneous guide
 
 ```
