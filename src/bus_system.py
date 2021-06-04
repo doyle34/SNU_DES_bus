@@ -2,7 +2,6 @@ import simpy
 from random import normalvariate, expovariate
 
 
-
 class Bus:
     def __init__(self, env, name, bus_cap, stations, iat_dist_list):
         self.env = env
@@ -13,6 +12,7 @@ class Bus:
         self.psn_cnt = 0
         self.iat_dist = iat_dist_list
         self.driving_process = self.env.process(self.drive())
+        self.driving_time = 0 ####################################
 
     def arrive(self, station):
         # bus arrives at a station, and passengers get off
@@ -49,7 +49,9 @@ class Bus:
     def drive(self):
         while True:
             for station, iat in zip(self.stations, self.iat_dist):
-                yield self.env.timeout(normalvariate(iat[0], iat[1]))  # bus moves to next station
+                driving_time_single = normalvariate(iat[0], iat[1]) ##################
+                yield self.env.timeout(driving_time_single)  # bus moves to next station
+                self.driving_time += driving_time_single ################
                 print(f'{self.name} arrives at {station.name}: {self.env.now}')
                 yield self.env.process(self.arrive(station))  # bus arrives at station[i]
                 self.station_idx += 1
