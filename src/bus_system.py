@@ -8,13 +8,13 @@ class Bus:
     def __init__(self, env, name, bus_cap, stations):
         self.env = env
         self.name = name
-        self.station_idx = 0
         self.stations = stations
         self.bus_idt_dist = np.array([13.5, 2.475])
         self.passengers = simpy.Store(self.env, capacity=bus_cap)
         self.psn_cnt = 0
         self.driving_process = self.env.process(self.drive())
         self.driving_time = 0
+        self.driving_distance = 0
 
     def arrive(self, station):
         # bus arrives at a station, and passengers get off
@@ -60,19 +60,19 @@ class Bus:
                 driving_time_single = normalvariate(station.bus_iat_dist[0], station.bus_iat_dist[1])
                 yield self.env.timeout(driving_time_single)  # bus moves to next station
                 self.driving_time += driving_time_single
+                self.driving_distance += station.distance
                 print(f'{self.name} arrives at {station.name}: {self.env.now}')
                 yield self.env.process(self.arrive(station))  # bus arrives at station[i]
-                self.station_idx += 1
             # bus finishes driving for one cycle
             print(f'{self.name} finishes driving for one cycle')
-            dispatch_time = normalvariate(self.bus_idt_dist[0], self.bus_idt_dist[1])
-            yield self.env.timeout(dispatch_time)
+            real_dispatch_time = max(normalvariate(self.bus_idt_dist[0], self.bus_idt_dist[1])
+                       - normalvariate(self.stations[0].bus_iat_dist[0], self.stations[0].bus_iat_dist[1]), 0)
+            yield self.env.timeout(real_dispatch_time)
             print(f'{self.name} returns to first station')
-            self.station_idx = 0
 
 
 class Station:
-    def __init__(self, env, name):
+    def __init__(self, env, name, distance):
         self.env = env
         self.name = name
         self.is_terminal = False
@@ -83,6 +83,7 @@ class Station:
         self.psn_iat_dist = np.array([10, 0.01])
         self.psn_idt_dist = np.array([10, 0.01])
         self.bus_iat_dist = np.array([7, 0.1])
+        self.distance = distance  # distance to current station
         self.arrival_process = self.env.process(self.passenger_arrive())
         self.departure_process = self.env.process(self.passenger_depart())
 
