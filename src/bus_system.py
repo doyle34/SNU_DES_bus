@@ -5,16 +5,20 @@ from random import normalvariate, expovariate
 
 
 class Bus:
-    def __init__(self, env, name, bus_cap, stations):
+    def __init__(self, env, bus_info, stations):
         self.env = env
-        self.name = name
+        self.name = bus_info["name"]
         self.stations = stations
         self.bus_idt_dist = np.array([13.5, 2.475])
-        self.passengers = simpy.Store(self.env, capacity=bus_cap)
+        self.passengers = simpy.Store(self.env, capacity=bus_info["capacity"])
         self.psn_cnt = 0
         self.driving_process = self.env.process(self.drive())
         self.driving_time = 0
         self.driving_distance = 0
+        self.category = bus_info["category"]
+        self.fuel = bus_info["fuel"]
+        self.model = bus_info["model"]
+        self.cost = 0
 
     def arrive(self, station):
         # bus arrives at a station, and passengers get off
@@ -62,6 +66,7 @@ class Bus:
                 self.driving_time += driving_time_single
                 self.driving_distance += station.distance
                 print(f'{self.name} arrives at {station.name}: {self.env.now}')
+                print(f'{self.passengers.capacity - len(self.passengers.items)} seats are available')
                 yield self.env.process(self.arrive(station))  # bus arrives at station[i]
             # bus finishes driving for one cycle
             print(f'{self.name} finishes driving for one cycle')
@@ -69,6 +74,13 @@ class Bus:
                        - normalvariate(self.stations[0].bus_iat_dist[0], self.stations[0].bus_iat_dist[1]), 0)
             yield self.env.timeout(real_dispatch_time)
             print(f'{self.name} returns to first station')
+
+    def calculate_cost(self, bus_cost):
+        fuel_cost = bus_cost[self.fuel]
+        operation_cost = bus_cost['operational']
+        retain_cost = bus_cost['retain']
+        self.cost = int(fuel_cost * self.driving_distance + operation_cost + retain_cost)
+        # print(f'total bus cost: {total_bus_cost}')
 
 
 class Station:
@@ -126,10 +138,10 @@ class Passenger:
         self.reneged = True
 
 
-def generate_buses(env, bus_capacity, stations, bus_idt_df, n_bus, buses):
-    for i in range(n_bus):
+def generate_buses(env, bus_info_df, stations, bus_idt_df, buses):
+    for i in range(len(bus_info_df)):
         j = math.floor(env.now / 60)
-        new_bus = Bus(env, f'B{i}', bus_capacity, stations)
+        new_bus = Bus(env, bus_info_df.iloc[i, :], stations)
         new_bus.bus_idt_dist = np.array([bus_idt_df.iloc[j, 1], bus_idt_df.iloc[j, 2]])
         buses.append(new_bus)
         yield env.timeout(normalvariate(bus_idt_df.iloc[j, 1], bus_idt_df.iloc[j, 2]))
