@@ -26,10 +26,22 @@ csv 읽어오는 몇줄 추가 <br/>
 현재는 psn은 각 정류장별 일일 전체 평균값만 사용, 작동하는지 확인만 <br/>
 bus도 마찬가지로 마지막 행 또는 열에 일일 전체 평균 추가하여 사용 <br/>
 bus_idt는 정류장 상관없이 차고지에서 출발시만 필요하니 한줄만 남기고 지움, 행열 바꿔서 읽기 쉽게 <br/>
-시간대별로 바뀌는건 시험 뒤에? 방식은 고민중 <br/>
 
 버스 클래스에 driving time 추가 <br/>
 total passengers, total driving time 추가 <br/>
+
+6/7 <br/>
+정류장마다 도착 버스 빈자리 출력하도록 변경 <br/>
+
+버스정보 bus_info.csv로 입력 name, category, fuel, model, capacity <br/>
+여기에 맞추어서 버스 생성 <br/>
+Bus class에 버스종류, 연료종류, 모델, 버스별 운영비용 저장하는 변수 추가 <br/>
+
+각 버스별로 운영비용 계산해서 합산 <br/>
+Bus class에 자신의 버스별 운영비용 계산하는 calculate_cost() 함수도 추가 <br/>
+일단 연료비 + operational + retain으로 계산 <br/>
+버스 종류에 따라서 연비 다르게 계산(medium, large) <br/>
+연료 종류 따라 가격 계산(CNG, ELEC, H2) <br/>
 
 ### word definition and miscellaneous guide
 
