@@ -1,24 +1,24 @@
 import simpy
 import math
 import numpy as np
-from random import normalvariate, expovariate
+from random import normalvariate
 
 
 class Bus:
     def __init__(self, env, bus_info, stations):
         self.env = env
         self.name = bus_info["name"]
-        self.stations = stations
-        self.bus_idt_dist = np.array([13.5, 2.475])
-        self.passengers = simpy.Store(self.env, capacity=bus_info["capacity"])
-        self.psn_cnt = 0
-        self.driving_process = self.env.process(self.drive())
-        self.driving_time = 0
-        self.driving_distance = 0
         self.category = bus_info["category"]
         self.fuel = bus_info["fuel"]
         self.model = bus_info["model"]
         self.cost = 0
+        self.stations = stations
+        self.bus_idt_dist = np.array([13.5, 2.475])
+        self.passengers = simpy.Store(self.env, capacity=bus_info["capacity"])
+        self.psn_cnt = 0
+        self.driving_time = 0
+        self.driving_distance = 0
+        self.driving_process = self.env.process(self.drive())
 
     def arrive(self, station):
         # bus arrives at a station, and passengers get off
@@ -71,7 +71,8 @@ class Bus:
             # bus finishes driving for one cycle
             print(f'{self.name} finishes driving for one cycle')
             real_dispatch_time = max(normalvariate(self.bus_idt_dist[0], self.bus_idt_dist[1])
-                       - normalvariate(self.stations[0].bus_iat_dist[0], self.stations[0].bus_iat_dist[1]), 0)
+                                     - normalvariate(self.stations[0].bus_iat_dist[0],
+                                                     self.stations[0].bus_iat_dist[1]), 0)
             yield self.env.timeout(real_dispatch_time)
             print(f'{self.name} returns to first station')
 
@@ -87,15 +88,15 @@ class Station:
     def __init__(self, env, name, distance):
         self.env = env
         self.name = name
+        self.distance = distance  # distance to current station
         self.is_terminal = False
-        self.n_psn_depart = 0
-        self.n_psn_renege = 0
         self.boarding_queue = simpy.Store(self.env)
-        self.psn_waiting_time = []
         self.psn_iat_dist = np.array([10, 0.01])
         self.psn_idt_dist = np.array([10, 0.01])
         self.bus_iat_dist = np.array([7, 0.1])
-        self.distance = distance  # distance to current station
+        self.n_psn_depart = 0
+        self.n_psn_renege = 0
+        self.psn_waiting_time = []
         self.arrival_process = self.env.process(self.passenger_arrive())
         self.departure_process = self.env.process(self.passenger_depart())
 
@@ -138,16 +139,23 @@ class Passenger:
         self.reneged = True
 
 
-def generate_buses(env, bus_info_df, stations, bus_idt_df, buses):
-    for i in range(len(bus_info_df)):
+def generate_buses(env, stations, bus_info_df, bus_idt_df, buses):
+    for i, row in bus_info_df.iterrows():
         j = math.floor(env.now / 60)
-        new_bus = Bus(env, bus_info_df.iloc[i, :], stations)
-        new_bus.bus_idt_dist = np.array([bus_idt_df.iloc[j, 1], bus_idt_df.iloc[j, 2]])
+        new_bus = Bus(env, row, stations)
+        new_bus.bus_idt_dist = np.array([bus_idt_df.iloc[j]['mean'], bus_idt_df[j]['std']])
         buses.append(new_bus)
-        yield env.timeout(normalvariate(bus_idt_df.iloc[j, 1], bus_idt_df.iloc[j, 2]))
+        yield env.timeout(normalvariate(bus_idt_df.iloc[j]['mean'], bus_idt_df.iloc[j]['std']))
+
+    # for i in range(len(bus_info_df)):
+    #     j = math.floor(env.now / 60)
+    #     new_bus = Bus(env, bus_info_df.iloc[i, :], stations)
+    #     new_bus.bus_idt_dist = np.array([bus_idt_df.iloc[j, 1], bus_idt_df.iloc[j, 2]])
+    #     buses.append(new_bus)
+    #     yield env.timeout(normalvariate(bus_idt_df.iloc[j, 1], bus_idt_df.iloc[j, 2]))
 
 
-def dist_change(env, stations, buses, df_list, temp_cnt):
+def dist_change(env, stations, buses, df_list):
     time_zone = 18
     psn_iat_df, psn_idt_df, bus_iat_df, bus_idt_df = df_list
     while True:
@@ -158,9 +166,8 @@ def dist_change(env, stations, buses, df_list, temp_cnt):
                 station.bus_iat_dist = np.array([bus_iat_df.iloc[i, j + 1], 0.1])
 
             for bus in buses:
-                bus.bus_idt_dist = np.array([bus_idt_df.iloc[j, 1], bus_idt_df.iloc[j, 2]])
+                bus.bus_idt_dist = np.array([bus_idt_df.iloc[j]['mean'], bus_idt_df[j]['std']])
 
-            temp_cnt.append(0)
             yield env.timeout(60)
 
 
