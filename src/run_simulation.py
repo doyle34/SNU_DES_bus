@@ -1,29 +1,77 @@
-import simpy
-from bus_system import Bus, Station, Passenger, generate_buses
-from random import normalvariate, expovariate
+from bus_system import *
 import numpy as np
+import pandas as pd
 
-# system configuration
+# system setup
 n_stations = 9
-n_bus = 4
-bus_capacity = 50
-SIM_TIME = 180
-# list of passenger arrival time distribution (mean, std) for each stations.
-psn_iat_dist_list = [np.array([1, 0]) for i in range(n_stations)]
-# list of passenger departure time distribution (mean, std) for each stations
-psn_idt_dist_list = [np.array([1, 0]) for i in range(n_stations)]
-# bus IAT distribution (mean, std) between stations
-bus_iat_dist_list = [np.array([5, 0]) for i in range(n_stations)]
-# bus inter-dispatch time distribution (mean, std)
-bus_idt_dist = np.array([10, 0])
+time_zone = 18
+SIM_TIME = 60 * time_zone + 1
+
+psn_iat_df = pd.read_csv("passenger_data/psn_iat.csv")
+psn_idt_df = pd.read_csv("passenger_data/psn_idt.csv")
+bus_iat_df = pd.read_csv("bus_data/bus_iat.csv")
+bus_idt_df = pd.read_csv("bus_data/bus_idt.csv")
+bus_info_df = pd.read_csv("bus_data/bus_info.csv")
+df_list = [psn_iat_df, psn_idt_df, bus_iat_df, bus_idt_df]
 
 env = simpy.Environment()
-stations = [Station(env, f'S{i}', piat, pidt)
-            for i, (piat, pidt) in enumerate(zip(psn_iat_dist_list, psn_idt_dist_list))]
+stations = [Station(env, f'S{i}', distance) for i, distance in enumerate(bus_iat_df['distance'])]
 stations[-1].is_terminal = True
 buses = []
-env.process(generate_buses(env, bus_capacity, stations, bus_iat_dist_list, bus_idt_dist, n_bus, buses))
+daily_waiting_times = []
+
+env.process(generate_buses(env, stations, bus_info_df, bus_idt_df, buses))
+env.process(dist_change(env, stations, buses, df_list))
+env.process(monitor(env, stations, daily_waiting_times))
 env.run(until=SIM_TIME)
-print('simulation end')
+
+print(f'simulation end')
+
+# statistics and cost calculation
+
+daily_passengers = 0
+daily_driving_time = 0
+daily_driving_distance = 0
+daily_fee = 0
+daily_bus_cost = 0
+
 for bus in buses:
-    print(f'{bus.name} transported {bus.psn_cnt} passengers during {SIM_TIME} min')
+    print(f'{bus.name} transported {bus.psn_cnt} passengers during {bus.driving_time} min')
+    daily_passengers += bus.psn_cnt
+    daily_driving_time += bus.driving_time
+    daily_driving_distance += bus.driving_distance
+
+for station in stations:
+    if station.n_psn_renege > 0:
+        print(f'{station.n_psn_renege} passengers reneged at {station.name}')
+
+print(f'daily passengers: {daily_passengers}')
+print(f'daily driving time: {daily_driving_time}')
+print(f'daily driving distance: {daily_driving_distance} ')
+df_columns = psn_idt_df.columns.drop(['station', 'average', 'std'])
+waiting_times_df = pd.DataFrame(np.transpose(np.array(daily_waiting_times)), columns=df_columns)
+waiting_times_df.to_csv('output/daily_waiting_times.csv', sep=',')
+
+# calculate total fee
+age_fee_df = pd.read_csv('passenger_data/age_ratio_and_fee.csv')
+for key, value in age_fee_df.iteritems():
+    daily_fee += daily_passengers * value[0] * value[1]
+
+print(f'daily fee: {round(daily_fee)}')
+
+# calculate bus operating cost
+large_bus_cost_df = pd.read_csv('bus_data/costs_large.csv')
+small_bus_cost_df = pd.read_csv('bus_data/costs_small.csv')
+
+for bus in buses:
+    if bus.category == 'medium':
+        bus.calculate_cost(small_bus_cost_df)
+    else:
+        bus.calculate_cost(large_bus_cost_df)
+
+    print(f'{bus.name} operating cost : {bus.cost} won per day')
+    daily_bus_cost += bus.cost
+
+print(f'sum of daily bus operating cost: {daily_bus_cost}')
+daily_profit = daily_fee - daily_bus_cost
+print(f'daily profit: {round(daily_profit)}')
