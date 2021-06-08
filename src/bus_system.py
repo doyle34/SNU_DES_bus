@@ -143,7 +143,7 @@ def generate_buses(env, stations, bus_info_df, bus_idt_df, buses):
     for i, row in bus_info_df.iterrows():
         j = math.floor(env.now / 60)
         new_bus = Bus(env, row, stations)
-        new_bus.bus_idt_dist = np.array([bus_idt_df.iloc[j]['mean'], bus_idt_df[j]['std']])
+        new_bus.bus_idt_dist = np.array([bus_idt_df.iloc[j]['mean'], bus_idt_df.iloc[j]['std']])
         buses.append(new_bus)
         yield env.timeout(normalvariate(bus_idt_df.iloc[j]['mean'], bus_idt_df.iloc[j]['std']))
 
@@ -166,7 +166,7 @@ def dist_change(env, stations, buses, df_list):
                 station.bus_iat_dist = np.array([bus_iat_df.iloc[i, j + 1], 0.1])
 
             for bus in buses:
-                bus.bus_idt_dist = np.array([bus_idt_df.iloc[j]['mean'], bus_idt_df[j]['std']])
+                bus.bus_idt_dist = np.array([bus_idt_df.iloc[j]['mean'], bus_idt_df.iloc[j]['std']])
 
             yield env.timeout(60)
 

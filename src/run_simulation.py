@@ -74,4 +74,4 @@ for bus in buses:
 
 print(f'sum of daily bus operating cost: {daily_bus_cost}')
 daily_profit = daily_fee - daily_bus_cost
-print(f'daily profit: {daily_profit}')
+print(f'daily profit: {round(daily_profit)}')
