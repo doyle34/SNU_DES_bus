@@ -18,7 +18,7 @@ class Bus:
         self.psn_cnt = 0
         self.driving_time = 0
         self.driving_distance = 0
-        self.driving_process = self.env.process(self.drive())
+        self.driving_process = 0
 
     def arrive(self, station):
         # bus arrives at a station, and passengers get off
@@ -33,6 +33,7 @@ class Bus:
                     temp_cnt += 1
 
         print(f'{temp_cnt} passengers get off from {self.name} at {station.name}: {self.env.now}')
+        station.n_hr_psn_depart += temp_cnt
         station.n_psn_depart = 0
         temp_cnt = 0
         # after passengers get off, new passengers board
@@ -57,6 +58,7 @@ class Bus:
                 self.psn_cnt += 1
 
         print(f'{temp_cnt} passengers board to {self.name} at {station.name}: {self.env.now}')
+        station.n_hr_psn_board += temp_cnt
 
     def drive(self):
         while True:
@@ -83,6 +85,9 @@ class Bus:
         self.cost = int(fuel_cost * self.driving_distance + operation_cost + retain_cost)
         # print(f'total bus cost: {total_bus_cost}')
 
+    def dispatch(self):
+        self.driving_process = self.env.process(self.drive())
+
 
 class Station:
     def __init__(self, env, name, distance):
@@ -96,6 +101,8 @@ class Station:
         self.bus_iat_dist = np.array([7, 0.1])
         self.n_psn_depart = 0
         self.n_psn_renege = 0
+        self.n_hr_psn_board = 0
+        self.n_hr_psn_depart = 0
         self.psn_waiting_time = []
         self.arrival_process = self.env.process(self.passenger_arrive())
         self.departure_process = self.env.process(self.passenger_depart())
@@ -139,20 +146,11 @@ class Passenger:
         self.reneged = True
 
 
-def generate_buses(env, stations, bus_info_df, bus_idt_df, buses):
-    for i, row in bus_info_df.iterrows():
+def dispatch_buses(env, bus_idt_df, buses):
+    for bus in buses:
         j = math.floor(env.now / 60)
-        new_bus = Bus(env, row, stations)
-        new_bus.bus_idt_dist = np.array([bus_idt_df.iloc[j]['mean'], bus_idt_df.iloc[j]['std']])
-        buses.append(new_bus)
+        bus.dispatch()
         yield env.timeout(normalvariate(bus_idt_df.iloc[j]['mean'], bus_idt_df.iloc[j]['std']))
-
-    # for i in range(len(bus_info_df)):
-    #     j = math.floor(env.now / 60)
-    #     new_bus = Bus(env, bus_info_df.iloc[i, :], stations)
-    #     new_bus.bus_idt_dist = np.array([bus_idt_df.iloc[j, 1], bus_idt_df.iloc[j, 2]])
-    #     buses.append(new_bus)
-    #     yield env.timeout(normalvariate(bus_idt_df.iloc[j, 1], bus_idt_df.iloc[j, 2]))
 
 
 def dist_change(env, stations, buses, df_list):
@@ -171,16 +169,58 @@ def dist_change(env, stations, buses, df_list):
             yield env.timeout(60)
 
 
-def monitor(env, stations, waiting_times):
+def monitor(env, stations, buses, hour_summaries):
+    prev_board = np.zeros(20)
+    prev_depart = np.zeros(20)
+    prev_renege = np.zeros(20)
+    prev_cnt = np.zeros(20)
+    prev_time = np.zeros(20)
+    prev_distance = np.zeros(20)
     while True:
         yield env.timeout(60)
+        psn_board_col = []
+        psn_depart_col = []
+        psn_renege_col = []
+        psn_cnt_col = []
+        driving_time_col = []
+        driving_distance_col = []
         waiting_times_col = []
-        for station in stations:
+        for i, station in enumerate(stations):
             if len(station.psn_waiting_time) > 0:
                 average_waiting_time = sum(station.psn_waiting_time) / len(station.psn_waiting_time)
             else:
                 average_waiting_time = 0
 
+            psn_board = station.n_hr_psn_board - prev_board[i]
+            psn_depart = station.n_hr_psn_depart - prev_depart[i]
+            psn_renege = station.n_psn_renege - prev_renege[i]
+
+            psn_board_col.append(psn_board)
+            psn_depart_col.append(psn_depart)
+            psn_renege_col.append(psn_renege)
             waiting_times_col.append(average_waiting_time)
 
-        waiting_times.append(waiting_times_col)
+            prev_board[i] = psn_board
+            prev_depart[i] = psn_depart
+            prev_renege[i] = psn_renege
+
+        for i, bus in enumerate(buses):
+            psn_cnt = bus.psn_cnt - prev_cnt[i]
+            driving_time = bus.driving_time - prev_time[i]
+            driving_distance = bus.driving_distance - prev_distance[i]
+
+            psn_cnt_col.append(psn_cnt)
+            driving_time_col.append(driving_time)
+            driving_distance_col.append(driving_distance)
+
+            prev_cnt[i] = psn_cnt
+            prev_time[i] = driving_time
+            prev_distance[i] = driving_distance
+
+        hour_summaries[0].append(psn_board_col)
+        hour_summaries[1].append(psn_depart_col)
+        hour_summaries[2].append(psn_renege_col)
+        hour_summaries[3].append(waiting_times_col)
+        hour_summaries[4].append(psn_cnt_col)
+        hour_summaries[5].append(driving_time_col)
+        hour_summaries[6].append(driving_distance_col)
