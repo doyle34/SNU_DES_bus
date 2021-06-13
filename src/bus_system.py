@@ -32,14 +32,12 @@ class Bus:
                     yield self.passengers.get()
                     temp_cnt += 1
 
-        print(f'{temp_cnt} passengers get off from {self.name} at {station.name}: {self.env.now}')
         station.n_hr_psn_depart += temp_cnt
         station.n_psn_depart = 0
         temp_cnt = 0
         # after passengers get off, new passengers board
         while station.boarding_queue.items:
             if len(self.passengers.items) == self.passengers.capacity:  # if bus is full
-                print(f'{self.name} is full, so passengers in {station.name} renege')
                 current_len = len(station.boarding_queue.items)
                 while len(station.boarding_queue.items) < current_len / 2:
                     passenger_renege = yield station.boarding_queue.get()  # half of passengers in boarding queue leaves
@@ -57,7 +55,6 @@ class Bus:
                 temp_cnt += 1
                 self.psn_cnt += 1
 
-        print(f'{temp_cnt} passengers board to {self.name} at {station.name}: {self.env.now}')
         station.n_hr_psn_board += temp_cnt
 
     def drive(self):
@@ -67,16 +64,12 @@ class Bus:
                 yield self.env.timeout(driving_time_single)  # bus moves to next station
                 self.driving_time += driving_time_single
                 self.driving_distance += station.distance
-                print(f'{self.name} arrives at {station.name}: {self.env.now}')
-                print(f'{self.passengers.capacity - len(self.passengers.items)} seats are available')
                 yield self.env.process(self.arrive(station))  # bus arrives at station[i]
             # bus finishes driving for one cycle
-            print(f'{self.name} finishes driving for one cycle')
             real_dispatch_time = max(normalvariate(self.bus_idt_dist[0], self.bus_idt_dist[1])
                                      - normalvariate(self.stations[0].bus_iat_dist[0],
                                                      self.stations[0].bus_iat_dist[1]), 0)
             yield self.env.timeout(real_dispatch_time)
-            print(f'{self.name} returns to first station')
 
     def calculate_cost(self, bus_cost):
         fuel_cost = bus_cost[self.fuel]
