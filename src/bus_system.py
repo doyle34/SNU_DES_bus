@@ -206,9 +206,9 @@ def monitor(env, stations, buses, hour_summaries):
             driving_time_col.append(driving_time)
             driving_distance_col.append(driving_distance)
 
-            prev_cnt[i] = psn_cnt
-            prev_time[i] = driving_time
-            prev_distance[i] = driving_distance
+            prev_cnt[i] += psn_cnt
+            prev_time[i] += driving_time
+            prev_distance[i] += driving_distance
 
         hour_summaries[0].append(psn_board_col)
         hour_summaries[1].append(psn_depart_col)
