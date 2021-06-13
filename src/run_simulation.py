@@ -17,12 +17,13 @@ df_list = [psn_iat_df, psn_idt_df, bus_iat_df, bus_idt_df]
 env = simpy.Environment()
 stations = [Station(env, f'S{i}', distance) for i, distance in enumerate(bus_iat_df['distance'])]
 stations[-1].is_terminal = True
-buses = []
-daily_waiting_times = []
+buses = [Bus(env, row, stations) for i, row in bus_info_df.iterrows()]
 
-env.process(generate_buses(env, stations, bus_info_df, bus_idt_df, buses))
+hour_summaries = [[], [], [], [], [], [], []]
+
+env.process(dispatch_buses(env, bus_idt_df, buses))
 env.process(dist_change(env, stations, buses, df_list))
-env.process(monitor(env, stations, daily_waiting_times))
+env.process(monitor(env, stations, buses, hour_summaries))
 env.run(until=SIM_TIME)
 
 print(f'simulation end')
@@ -48,9 +49,13 @@ for station in stations:
 print(f'daily passengers: {daily_passengers}')
 print(f'daily driving time: {daily_driving_time}')
 print(f'daily driving distance: {daily_driving_distance} ')
+
 df_columns = psn_idt_df.columns.drop(['station', 'average', 'std'])
-waiting_times_df = pd.DataFrame(np.transpose(np.array(daily_waiting_times)), columns=df_columns)
-waiting_times_df.to_csv('output/daily_waiting_times.csv', sep=',')
+csv_names = ['board', 'depart', 'renege', 'wait', 'bus users', 'drive time', 'drive distance']
+for summary, filename in zip(hour_summaries, csv_names):
+    summary_df = pd.DataFrame(np.transpose(np.array(summary)), columns=df_columns)
+    file_dir = 'output/' + filename + '.csv'
+    summary_df.to_csv(file_dir, sep=',')
 
 # calculate total fee
 age_fee_df = pd.read_csv('passenger_data/age_ratio_and_fee.csv')

@@ -2,13 +2,13 @@
 
 ## TODO
 * 이틀 이상의 시뮬레이션 기간 동안의 통계치와 코스트 계산 <br/>
-* 계산 결과를 csv로 정리 - csv 포맷 논의 필요
 ## DONE
 * 하루(6시~24시) 동안 시뮬레이션 후 통계치와 코스트 계산<br/>
 * 매 시간마다 승객, 버스 시간 분포 갱신<br/>
 * 매 시간마다 정류장 별 평균 승차 대기 시간 계산 후 daily_waiting_times.csv에 저장<br/>
 * bus_info.csv 파일에 버스의 이름, 종류, 연료, 모델, 용량 저장하고 이로부터 버스 생성<br/>
 * 일 버스 요금과 버스 운용비를 계산하고 일 이익을 계산
+* 계산 결과를 csv로 정리 (/output)
 
 ### word definition and miscellaneous guide
 
@@ -28,5 +28,14 @@ naming rule:
     Bus: bus_info.csv의 'name' column 값
     Station: S{i}
     Passenger: S{i}P{j}: station[i]의 j번째 passenger
+    
+output files
+    board.csv: 정류장/시간대별 탑승객 수
+    depart.csv: 정류장/시간대별 하차객 수
+    renege.csv: 정류장/시간대별 승차 포기 승객 수
+    wait.csv: 정류장/시간대별 평균 대기 시간
+    bus users.csv: 버스/시간대별 이용객 수
+    drive distance.csv: 버스/시간대별 운행 거리 (종점 -> 시점 이동은 포함 X)
+    drive time.csv: 버스/시간대별 운행 시간 (종점 -> 시점 이동은 포함 X)
 
 ```
