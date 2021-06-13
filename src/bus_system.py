@@ -200,9 +200,9 @@ def monitor(env, stations, buses, hour_summaries):
             psn_renege_col.append(psn_renege)
             waiting_times_col.append(average_waiting_time)
 
-            prev_board[i] = psn_board
-            prev_depart[i] = psn_depart
-            prev_renege[i] = psn_renege
+            prev_board[i] += psn_board
+            prev_depart[i] += psn_depart
+            prev_renege[i] += psn_renege
 
         for i, bus in enumerate(buses):
             psn_cnt = bus.psn_cnt - prev_cnt[i]

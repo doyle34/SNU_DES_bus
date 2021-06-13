@@ -57,9 +57,6 @@ for summary, filename in zip(hour_summaries, csv_names):
     file_dir = 'output/' + filename + '.csv'
     summary_df.to_csv(file_dir, sep=',')
 
-# waiting_times_df = pd.DataFrame(np.transpose(np.array(daily_waiting_times)), columns=df_columns)
-# waiting_times_df.to_csv('output/daily_waiting_times.csv', sep=',')
-
 # calculate total fee
 age_fee_df = pd.read_csv('passenger_data/age_ratio_and_fee.csv')
 for key, value in age_fee_df.iteritems():
