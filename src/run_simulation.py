@@ -7,7 +7,7 @@ total_profit = 0
 total_wating_time = 0
 
 for day in range(n_days):
-    print(f'-------------------- day {day} --------------------')
+    print(f'-------------------- day {day+1} --------------------')
     # system setup
     n_stations = 9
     time_zone = 18
