@@ -39,7 +39,7 @@ class Bus:
         while station.boarding_queue.items:
             if len(self.passengers.items) == self.passengers.capacity:  # if bus is full
                 current_len = len(station.boarding_queue.items)
-                while len(station.boarding_queue.items) < current_len / 2:
+                while len(station.boarding_queue.items) > current_len / 2:
                     passenger_renege = yield station.boarding_queue.get()  # half of passengers in boarding queue leaves
                     passenger_renege.renege(self.env)
                     station.psn_waiting_time.append(passenger_renege.waiting_time)
@@ -66,8 +66,8 @@ class Bus:
                 self.driving_distance += station.distance
                 yield self.env.process(self.arrive(station))  # bus arrives at station[i]
             # bus finishes driving for one cycle
-            real_dispatch_time = max(normalvariate(self.bus_idt_dist[0], self.bus_idt_dist[1])
-                                     - normalvariate(self.stations[0].bus_iat_dist[0],
+            dispatch_time = max(normalvariate(self.bus_idt_dist[0], self.bus_idt_dist[1]), 10)
+            real_dispatch_time = max(dispatch_time - normalvariate(self.stations[0].bus_iat_dist[0],
                                                      self.stations[0].bus_iat_dist[1]), 0)
             yield self.env.timeout(real_dispatch_time)
 
