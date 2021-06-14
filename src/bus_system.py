@@ -39,7 +39,7 @@ class Bus:
         while station.boarding_queue.items:
             if len(self.passengers.items) == self.passengers.capacity:  # if bus is full
                 current_len = len(station.boarding_queue.items)
-                while len(station.boarding_queue.items) < current_len / 2:
+                while len(station.boarding_queue.items) > current_len / 2:
                     passenger_renege = yield station.boarding_queue.get()  # half of passengers in boarding queue leaves
                     passenger_renege.renege(self.env)
                     station.psn_waiting_time.append(passenger_renege.waiting_time)
