@@ -11,7 +11,7 @@ psn_iat_df = pd.read_csv("passenger_data/psn_iat.csv")
 psn_idt_df = pd.read_csv("passenger_data/psn_idt.csv")
 bus_iat_df = pd.read_csv("bus_data/bus_iat.csv")
 bus_idt_df = pd.read_csv("bus_data/bus_idt.csv")
-bus_info_df = pd.read_csv("bus_data/bus_info.csv")
+bus_info_df = pd.read_csv("bus_data/bus_info_5.csv")
 df_list = [psn_iat_df, psn_idt_df, bus_iat_df, bus_idt_df]
 
 env = simpy.Environment()
