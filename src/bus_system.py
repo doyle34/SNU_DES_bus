@@ -49,11 +49,31 @@ class Bus:
 
             else:  # if bus is not full
                 passenger_now = yield station.boarding_queue.get()
-                passenger_now.board(self.env)
-                station.psn_waiting_time.append(passenger_now.waiting_time)
-                yield self.passengers.put(passenger_now)
-                temp_cnt += 1
-                self.psn_cnt += 1
+                # --------------------- Original ---------------------------------
+                # passenger_now.board(self.env)
+                # station.psn_waiting_time.append(passenger_now.waiting_time)
+                # yield self.passengers.put(passenger_now)
+                # temp_cnt += 1
+                # self.psn_cnt += 1
+                # --------------------------------------------------------------
+
+                # Cannot wait more than 15 minutes
+                # --------------------------------------------------------------
+                # if passenger waited more than 15 minute, renege
+                passenger_now.check_waiting_time(self.env)
+                if passenger_now.waiting_time > 15:
+                    passenger_now.go_home(self.env)
+                    station.psn_waiting_time.append(passenger_now.waiting_time)
+                    station.n_psn_renege += 1
+
+                else:
+                    # passenger_now.board(self.env)
+                    station.psn_waiting_time.append(passenger_now.waiting_time)
+                    yield self.passengers.put(passenger_now)
+                    temp_cnt += 1
+                    self.psn_cnt += 1
+
+                # --------------------------------------------------------------
 
         station.n_hr_psn_board += temp_cnt
 
@@ -136,6 +156,13 @@ class Passenger:
     def renege(self, env):
         self.waiting_end = env.now
         self.waiting_time = self.waiting_end - self.waiting_start
+        self.reneged = True
+
+    def check_waiting_time(self, env):
+        self.waiting_end = env.now
+        self.waiting_time = self.waiting_end - self.waiting_start
+
+    def go_home(self, env):
         self.reneged = True
 
 

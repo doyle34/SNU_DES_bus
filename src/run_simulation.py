@@ -105,7 +105,7 @@ for case in range(n_cases):
             else:
                 bus.calculate_cost(large_bus_cost_df)
 
-            #            print(f'{bus.name} operating cost : {bus.cost} won')
+#            print(f'{bus.name} operating cost : {bus.cost} won')
             daily_bus_cost += bus.cost
 
 #        print(f'sum of daily bus operating cost: {daily_bus_cost} won')
@@ -158,7 +158,7 @@ print(f'best case : case{best_case}')
 print(f'average profit: {best_profit} won')
 print(f'average waiting: {best_waiting_time} minutes')
 print(f'average renege: {best_renege}')
-print(f'average net profit: {best_waiting_cost_waste}')
+print(f'average waste: {best_waiting_cost_waste}')
 print(f'average net profit: {best_net_profit}')
 
 final_results[0].append('best : ' + str(best_case))
