@@ -143,7 +143,7 @@ def dispatch_buses(env, bus_idt_df, buses):
     for bus in buses:
         j = math.floor(env.now / 60)
         bus.dispatch()
-        yield env.timeout(normalvariate(bus_idt_df.iloc[j]['mean'], bus_idt_df.iloc[j]['std']))
+        yield env.timeout(normalvariate(bus_idt_df.iloc[j,0], bus_idt_df.iloc[j,1]))
 
 
 def dist_change(env, stations, buses, df_list):
@@ -157,7 +157,7 @@ def dist_change(env, stations, buses, df_list):
                 station.bus_iat_dist = np.array([bus_iat_df.iloc[i, j + 1], 0.1])
 
             for bus in buses:
-                bus.bus_idt_dist = np.array([bus_idt_df.iloc[j]['mean'], bus_idt_df.iloc[j]['std']])
+                bus.bus_idt_dist = np.array([bus_idt_df.iloc[j,0], bus_idt_df.iloc[j,1]])
 
             yield env.timeout(60)
 
