@@ -1,13 +1,24 @@
 from bus_system import *
 import numpy as np
 import pandas as pd
+import os
 
-n_days = 100
+n_days = 10
+cost_per_minute = 66.8379
+discount = 0.8  # considering transfer
 
 total_bus_idt_df = pd.read_csv("bus_data/bus_idt.csv")
 n_cases = int(len(total_bus_idt_df.columns)/2)
-#final_results = [[], [], [], []]
 final_results = [[], [], [], [], []]
+
+psn_iat_df = pd.read_csv("passenger_data/psn_iat.csv")
+psn_idt_df = pd.read_csv("passenger_data/psn_idt.csv")
+bus_iat_df = pd.read_csv("bus_data/bus_iat.csv")
+bus_info_df = pd.read_csv("bus_data/bus_info.csv")
+
+age_fee_df = pd.read_csv('passenger_data/age_ratio_and_fee.csv')
+large_bus_cost_df = pd.read_csv('bus_data/costs_large.csv')
+small_bus_cost_df = pd.read_csv('bus_data/costs_small.csv')
 
 best_case = -1
 best_profit = -100000000
@@ -16,7 +27,6 @@ best_renege = -1
 best_waiting_cost_waste = -1
 best_net_profit = -1
 
-
 for case in range(n_cases):
 
     total_profit = 0
@@ -24,6 +34,7 @@ for case in range(n_cases):
     total_renege = 0
     total_net_profit = 0
     total_waiting_cost_waste = 0
+    os.makedirs('output/case' + str(case + 1), exist_ok=True)
 
     for day in range(n_days):
         print(f'-------------------- case {case + 1} day {day + 1} --------------------')
@@ -32,12 +43,7 @@ for case in range(n_cases):
         time_zone = 18
         SIM_TIME = 60 * time_zone + 1
 
-        psn_iat_df = pd.read_csv("passenger_data/psn_iat.csv")
-        psn_idt_df = pd.read_csv("passenger_data/psn_idt.csv")
-        bus_iat_df = pd.read_csv("bus_data/bus_iat.csv")
-        # bus_idt_df = pd.read_csv("bus_data/bus_idt.csv")
         bus_idt_df = total_bus_idt_df.iloc[:, [2*case + 1, 2*case + 2]]
-        bus_info_df = pd.read_csv("bus_data/bus_info.csv")
         df_list = [psn_iat_df, psn_idt_df, bus_iat_df, bus_idt_df]
 
         env = simpy.Environment()
@@ -85,20 +91,16 @@ for case in range(n_cases):
         csv_names = ['board', 'depart', 'renege', 'wait', 'bus users', 'drive time', 'drive distance']
         for summary, filename in zip(hour_summaries, csv_names):
             summary_df = pd.DataFrame(np.transpose(np.array(summary)), columns=df_columns)
-            file_dir = 'output/' + filename + '.csv'
+            file_dir = 'output/case' + str(case + 1) + '/' + filename + '.csv'
             summary_df.to_csv(file_dir, sep=',')
 
         # calculate total fee
-        age_fee_df = pd.read_csv('passenger_data/age_ratio_and_fee.csv')
         for key, value in age_fee_df.iteritems():
-            daily_fee += daily_passengers * value[0] * value[1]
+            daily_fee += daily_passengers * value[0] * value[1] * discount
 
 #        print(f'daily fee: {round(daily_fee)} won')
 
         # calculate bus operating cost
-        large_bus_cost_df = pd.read_csv('bus_data/costs_large.csv')
-        small_bus_cost_df = pd.read_csv('bus_data/costs_small.csv')
-
         for bus in buses:
             if bus.category == 'medium':
                 bus.calculate_cost(small_bus_cost_df)
@@ -118,12 +120,11 @@ for case in range(n_cases):
 #        print(f'daily average waiting time: {daily_average_waiting_time} minutes')
         total_waiting_time += daily_average_waiting_time
 
-        daily_waiting_cost_waste = daily_total_waiting_time * 66.8379
+        daily_waiting_cost_waste = daily_total_waiting_time * cost_per_minute
         daily_net_profit = daily_profit - daily_waiting_cost_waste
-        # print(f'net profit concidering waiting time: {round(daily_net_profit)}')
+#        print(f'net profit concidering waiting time: {round(daily_net_profit)}')
         total_waiting_cost_waste += daily_waiting_cost_waste
         total_net_profit += daily_net_profit
-
 
     average_profit = total_profit/n_days
     average_waiting_time = total_waiting_time / n_days
@@ -168,9 +169,7 @@ final_results[3].append(best_renege)
 # final_results[3].append(average_waiting_cost_waste)
 final_results[4].append(best_net_profit)
 
-
 # print final results to csv file
-# result_col = ['case', 'average profit', 'average waiting time', 'average renege']
 result_col = ['case', 'average profit', 'average waiting time', 'average renege', 'average net profit']
 result_df = pd.DataFrame(np.transpose(np.array(final_results)), columns=result_col)
 result_df.to_csv('output/final_results.csv', sep=',', index=False)

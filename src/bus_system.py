@@ -3,6 +3,7 @@ import math
 import numpy as np
 from random import normalvariate
 
+waiting_limit = 15
 
 class Bus:
     def __init__(self, env, bus_info, stations):
@@ -19,13 +20,22 @@ class Bus:
         self.driving_time = 0
         self.driving_distance = 0
         self.driving_process = 0
+        self.leftover = 0
+        self.running = simpy.Resource(self.env, capacity=1)
 
     def arrive(self, station):
         # bus arrives at a station, and passengers get off
         temp_cnt = 0
         if station.is_terminal:  # if bus arrived at terminal
+            for i in range(station.n_psn_depart):
+                if self.passengers.items:
+                    yield self.passengers.get()
+                    temp_cnt += 1
+
             while self.passengers.items:
                 yield self.passengers.get()
+                self.leftover += 1
+
         else:
             for i in range(station.n_psn_depart):
                 if self.passengers.items:
@@ -41,7 +51,8 @@ class Bus:
                 current_len = len(station.boarding_queue.items)
                 while len(station.boarding_queue.items) > current_len / 2:
                     passenger_renege = yield station.boarding_queue.get()  # half of passengers in boarding queue leaves
-                    passenger_renege.renege(self.env)
+                    passenger_renege.end_waiting(self.env)
+                    passenger_renege.renege()
                     station.psn_waiting_time.append(passenger_renege.waiting_time)
                     station.n_psn_renege += 1
 
@@ -49,8 +60,8 @@ class Bus:
 
             else:  # if bus is not full
                 passenger_now = yield station.boarding_queue.get()
+                passenger_now.end_waiting(self.env)
                 # --------------------- Original ---------------------------------
-                # passenger_now.board(self.env)
                 # station.psn_waiting_time.append(passenger_now.waiting_time)
                 # yield self.passengers.put(passenger_now)
                 # temp_cnt += 1
@@ -60,14 +71,13 @@ class Bus:
                 # Cannot wait more than 15 minutes
                 # --------------------------------------------------------------
                 # if passenger waited more than 15 minute, renege
-                passenger_now.check_waiting_time(self.env)
-                if passenger_now.waiting_time > 15:
-                    passenger_now.go_home(self.env)
-                    station.psn_waiting_time.append(passenger_now.waiting_time)
+
+                if passenger_now.waiting_time > waiting_limit:
+                    passenger_now.renege()
+                    station.psn_waiting_time.append(waiting_limit)
                     station.n_psn_renege += 1
 
                 else:
-                    # passenger_now.board(self.env)
                     station.psn_waiting_time.append(passenger_now.waiting_time)
                     yield self.passengers.put(passenger_now)
                     temp_cnt += 1
@@ -78,7 +88,9 @@ class Bus:
         station.n_hr_psn_board += temp_cnt
 
     def drive(self):
-        while True:
+        with self.running.request() as req:
+            yield req
+            # print(self.name + ' start driving at ' + str(self.env.now))
             for station in self.stations:
                 driving_time_single = normalvariate(station.bus_iat_dist[0], station.bus_iat_dist[1])
                 yield self.env.timeout(driving_time_single)  # bus moves to next station
@@ -86,10 +98,12 @@ class Bus:
                 self.driving_distance += station.distance
                 yield self.env.process(self.arrive(station))  # bus arrives at station[i]
             # bus finishes driving for one cycle
+            # print(self.name + ' finish driving at ' + str(self.env.now))
             real_dispatch_time = max(normalvariate(self.bus_idt_dist[0], self.bus_idt_dist[1])
                                      - normalvariate(self.stations[0].bus_iat_dist[0],
                                                      self.stations[0].bus_iat_dist[1]), 0)
             yield self.env.timeout(real_dispatch_time)
+            # print(self.name + ' ready at ' + str(self.env.now))
 
     def calculate_cost(self, bus_cost):
         fuel_cost = bus_cost[self.fuel]
@@ -149,28 +163,20 @@ class Passenger:
     def start_waiting(self, env):
         self.waiting_start = env.now
 
-    def board(self, env):
+    def end_waiting(self, env):
         self.waiting_end = env.now
         self.waiting_time = self.waiting_end - self.waiting_start
 
-    def renege(self, env):
-        self.waiting_end = env.now
-        self.waiting_time = self.waiting_end - self.waiting_start
-        self.reneged = True
-
-    def check_waiting_time(self, env):
-        self.waiting_end = env.now
-        self.waiting_time = self.waiting_end - self.waiting_start
-
-    def go_home(self, env):
+    def renege(self):
         self.reneged = True
 
 
 def dispatch_buses(env, bus_idt_df, buses):
-    for bus in buses:
-        j = math.floor(env.now / 60)
-        bus.dispatch()
-        yield env.timeout(normalvariate(bus_idt_df.iloc[j,0], bus_idt_df.iloc[j,1]))
+    while True:
+        for bus in buses:
+            j = min(math.floor(env.now / 60), len(bus_idt_df)-1)
+            bus.dispatch()
+            yield env.timeout(normalvariate(bus_idt_df.iloc[j, 0], bus_idt_df.iloc[j, 1]))
 
 
 def dist_change(env, stations, buses, df_list):
