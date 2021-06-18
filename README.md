@@ -1,22 +1,16 @@
 # SNU_DES_bus
-profit optimization for n_bus = 5
-## Functions
+
+## TODO
+* 이틀 이상의 시뮬레이션 기간 동안의 통계치 출력 <br/>
+## DONE
 * 하루(6시~24시) 동안 시뮬레이션 후 통계치와 코스트 계산<br/>
 * 매 시간마다 승객, 버스 시간 분포 갱신<br/>
 * 매 시간마다 정류장 별 평균 승차 대기 시간 계산 후 daily_waiting_times.csv에 저장<br/>
 * bus_info.csv 파일에 버스의 이름, 종류, 연료, 모델, 용량 저장하고 이로부터 버스 생성<br/>
 * 일 버스 요금과 버스 운용비를 계산하고 일 이익을 계산
-* 100일간의 통계치와 코스트 계산 <br/>
+* 원하는 일 수 만큼 반복 시뮬레이션 후 평균 일별 운영이익, 인당 대기시간, 일별 탑승포기인원, 일별 시간가치 고려 총 이익/손해 계산
+* 최적화 위해 원하는 배차 간격을 bus_idt.csv에 입력하여 각 경우별 수치들 계산
 * 계산 결과를 csv로 정리 (/output)
-
-## Optimization Strategy
-하루 중 운행 시간대를 탑승 인원 분포에 맞추어 분류한다 </br>
-* sparse: 5, 6, 22, 23 <br/>
-* normal: 7, 10, 11, 12, 13, 14 ,15, 16, 20, 21 <br/>
-* peak: 8, 9, 17, 18, 19 <br/>
-
-각 운행 시간대별로 버스 배차 간격을 조금씩 조정하여 case study </br>
-profit이 최대가 되는 case를 구한다 </br>
 
 ### word definition and miscellaneous guide
 
@@ -45,5 +39,6 @@ output files
     bus users.csv: 버스/시간대별 이용객 수
     drive distance.csv: 버스/시간대별 운행 거리 (종점 -> 시점 이동은 포함 X)
     drive time.csv: 버스/시간대별 운행 시간 (종점 -> 시점 이동은 포함 X)
+    final_result.csv: 배차시간 case별 버스운영이익, 평균 대기시간, 평균 탑승포기 인원수, 시간가치 고려 총 이익/손해 
 
 ```

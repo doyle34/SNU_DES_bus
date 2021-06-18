@@ -1,9 +1,9 @@
 name,category,fuel,model,capacity
-BUS 1,Low_Floor,CNG,New_Super_Aerocity_LowFloor,55
-BUS 2,Low_Floor,CNG,New_Super_Aerocity_LowFloor,55
-BUS 3,Low_Floor,CNG,New_Super_Aerocity_LowFloor,55
-BUS 4,Low_Floor,CNG,New_Super_Aerocity_LowFloor,55
-BUS 5,Low_Floor,CNG,New_Super_Aerocity_LowFloor,55
-BUS 6,Low_Floor,CNG,New_Super_Aerocity_LowFloor,55
-BUS 7,Low_Floor,CNG,New_Super_Aerocity_LowFloor,55
-BUS 8,Low_Floor,CNG,New_Super_Aerocity_LowFloor,55
+BUS 1,large,CNG,New_Super_Aerocity_LowFloor,55
+BUS 2,large,CNG,New_Super_Aerocity_LowFloor,55
+BUS 3,large,CNG,New_Super_Aerocity_LowFloor,55
+BUS 4,large,CNG,New_Super_Aerocity_LowFloor,55
+BUS 5,large,CNG,New_Super_Aerocity_LowFloor,55
+BUS 6,large,CNG,New_Super_Aerocity_LowFloor,55
+BUS 7,large,CNG,New_Super_Aerocity_LowFloor,55
+BUS 8,large,CNG,New_Super_Aerocity_LowFloor,55
