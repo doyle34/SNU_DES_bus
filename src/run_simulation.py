@@ -73,7 +73,7 @@ for case in range(n_cases):
 
         for bus in buses:
 # 4         print(f'{bus.name} transported {bus.psn_cnt} passengers during {bus.driving_time} min')
-            daily_passengers += bus.psn_cnt
+            daily_passengers += bus.board_cnt
             daily_driving_time += bus.driving_time
             daily_driving_distance += bus.driving_distance
 
