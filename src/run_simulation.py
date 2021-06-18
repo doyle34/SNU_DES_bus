@@ -5,7 +5,7 @@ import os
 
 n_days = 10
 cost_per_minute = 66.8379
-discount = 0.8  # considering transfer
+discount = 0.8
 
 total_bus_idt_df = pd.read_csv("bus_data/bus_idt.csv")
 n_cases = int(len(total_bus_idt_df.columns)/2)
@@ -58,7 +58,7 @@ for case in range(n_cases):
         env.process(monitor(env, stations, buses, hour_summaries))
         env.run(until=SIM_TIME)
 
-#        print(f'simulation end')
+#3        print(f'simulation end')
 
         # statistics and cost calculation
 
@@ -71,7 +71,7 @@ for case in range(n_cases):
         daily_waiting_cost_waste = 0
 
         for bus in buses:
-#            print(f'{bus.name} transported {bus.psn_cnt} passengers during {bus.driving_time} min')
+#4            print(f'{bus.name} transported {bus.psn_cnt} passengers during {bus.driving_time} min')
             daily_passengers += bus.psn_cnt
             daily_driving_time += bus.driving_time
             daily_driving_distance += bus.driving_distance
@@ -80,12 +80,12 @@ for case in range(n_cases):
             if len(station.psn_waiting_time) > 0:
                 daily_total_waiting_time += sum(station.psn_waiting_time)
             if station.n_psn_renege > 0:
-#                print(f'{station.n_psn_renege} passengers reneged at {station.name}')
+#5                print(f'{station.n_psn_renege} passengers reneged at {station.name}')
                 total_renege += station.n_psn_renege
 
-#        print(f'daily passengers: {daily_passengers}')
-#        print(f'daily driving time: {daily_driving_time}')
-#        print(f'daily driving distance: {daily_driving_distance}')
+#6        print(f'daily passengers: {daily_passengers}')
+#7        print(f'daily driving time: {daily_driving_time}')
+#8        print(f'daily driving distance: {daily_driving_distance}')
 
         df_columns = psn_idt_df.columns.drop(['station', 'average', 'std'])
         csv_names = ['board', 'depart', 'renege', 'wait', 'bus users', 'drive time', 'drive distance']
@@ -98,7 +98,7 @@ for case in range(n_cases):
         for key, value in age_fee_df.iteritems():
             daily_fee += daily_passengers * value[0] * value[1] * discount
 
-#        print(f'daily fee: {round(daily_fee)} won')
+#9        print(f'daily fee: {round(daily_fee)} won')
 
         # calculate bus operating cost
         for bus in buses:
@@ -107,22 +107,22 @@ for case in range(n_cases):
             else:
                 bus.calculate_cost(large_bus_cost_df)
 
-#            print(f'{bus.name} operating cost : {bus.cost} won')
+#10            print(f'{bus.name} operating cost : {bus.cost} won')
             daily_bus_cost += bus.cost
 
-#        print(f'sum of daily bus operating cost: {daily_bus_cost} won')
+#11        print(f'sum of daily bus operating cost: {daily_bus_cost} won')
         daily_profit = daily_fee - daily_bus_cost
-#        print(f'daily profit: {round(daily_profit)} won')
+#12        print(f'daily profit: {round(daily_profit)} won')
         total_profit += daily_profit
 
-#        print(f'sum of waiting time: {daily_total_waiting_time} minutes')
+#13        print(f'sum of waiting time: {daily_total_waiting_time} minutes')
         daily_average_waiting_time = daily_total_waiting_time / daily_passengers
-#        print(f'daily average waiting time: {daily_average_waiting_time} minutes')
+#14        print(f'daily average waiting time: {daily_average_waiting_time} minutes')
         total_waiting_time += daily_average_waiting_time
 
         daily_waiting_cost_waste = daily_total_waiting_time * cost_per_minute
         daily_net_profit = daily_profit - daily_waiting_cost_waste
-#        print(f'net profit concidering waiting time: {round(daily_net_profit)}')
+#15        print(f'net profit concidering waiting time: {round(daily_net_profit)}')
         total_waiting_cost_waste += daily_waiting_cost_waste
         total_net_profit += daily_net_profit
 
@@ -135,7 +135,6 @@ for case in range(n_cases):
     print(f'{n_days}days average profit: {average_profit} won')
     print(f'{n_days}days average waiting: {average_waiting_time} minutes')
     print(f'{n_days}days average renege: {average_renege}')
-    print(f'{n_days}days average waste: {average_waiting_cost_waste} won')
     print(f'{n_days}days average net profit: {average_net_profit} won')
 
     # append results to final_results.csv
@@ -143,7 +142,6 @@ for case in range(n_cases):
     final_results[1].append(average_profit)
     final_results[2].append(average_waiting_time)
     final_results[3].append(average_renege)
-    # final_results[3].append(average_waiting_cost_waste)
     final_results[4].append(average_net_profit)
 
     if average_profit > best_profit:
@@ -166,7 +164,6 @@ final_results[0].append('best : ' + str(best_case))
 final_results[1].append(best_profit)
 final_results[2].append(best_waiting_time)
 final_results[3].append(best_renege)
-# final_results[3].append(average_waiting_cost_waste)
 final_results[4].append(best_net_profit)
 
 # print final results to csv file

@@ -61,15 +61,7 @@ class Bus:
             else:  # if bus is not full
                 passenger_now = yield station.boarding_queue.get()
                 passenger_now.end_waiting(self.env)
-                # --------------------- Original ---------------------------------
-                # station.psn_waiting_time.append(passenger_now.waiting_time)
-                # yield self.passengers.put(passenger_now)
-                # temp_cnt += 1
-                # self.psn_cnt += 1
-                # --------------------------------------------------------------
 
-                # Cannot wait more than 15 minutes
-                # --------------------------------------------------------------
                 # if passenger waited more than 15 minute, renege
 
                 if passenger_now.waiting_time > waiting_limit:
@@ -83,14 +75,12 @@ class Bus:
                     temp_cnt += 1
                     self.psn_cnt += 1
 
-                # --------------------------------------------------------------
-
         station.n_hr_psn_board += temp_cnt
 
     def drive(self):
         with self.running.request() as req:
             yield req
-            # print(self.name + ' start driving at ' + str(self.env.now))
+#1            print(self.name + ' start driving at ' + str(self.env.now))
             for station in self.stations:
                 driving_time_single = normalvariate(station.bus_iat_dist[0], station.bus_iat_dist[1])
                 yield self.env.timeout(driving_time_single)  # bus moves to next station
@@ -98,19 +88,17 @@ class Bus:
                 self.driving_distance += station.distance
                 yield self.env.process(self.arrive(station))  # bus arrives at station[i]
             # bus finishes driving for one cycle
-            # print(self.name + ' finish driving at ' + str(self.env.now))
             real_dispatch_time = max(normalvariate(self.bus_idt_dist[0], self.bus_idt_dist[1])
                                      - normalvariate(self.stations[0].bus_iat_dist[0],
                                                      self.stations[0].bus_iat_dist[1]), 0)
             yield self.env.timeout(real_dispatch_time)
-            # print(self.name + ' ready at ' + str(self.env.now))
+#2            print(self.name + ' finish driving at ' + str(self.env.now))
 
     def calculate_cost(self, bus_cost):
         fuel_cost = bus_cost[self.fuel]
         operation_cost = bus_cost['operational']
         retain_cost = bus_cost['retain']
         self.cost = int(fuel_cost * self.driving_distance + operation_cost + retain_cost)
-        # print(f'total bus cost: {total_bus_cost}')
 
     def dispatch(self):
         self.driving_process = self.env.process(self.drive())
