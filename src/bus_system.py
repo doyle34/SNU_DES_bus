@@ -61,18 +61,7 @@ class Bus:
             else:  # if bus is not full
                 passenger_now = yield station.boarding_queue.get()
                 passenger_now.end_waiting(self.env)
-                # --------------------- Original ---------------------------------
-                # station.psn_waiting_time.append(passenger_now.waiting_time)
-                # yield self.passengers.put(passenger_now)
-                # temp_cnt += 1
-                # self.psn_cnt += 1
-                # --------------------------------------------------------------
-
-                # Cannot wait more than 15 minutes
-                # --------------------------------------------------------------
-                # if passenger waited more than 15 minute, renege
-
-                if passenger_now.waiting_time > waiting_limit:
+                if passenger_now.waiting_time > waiting_limit:  # passenger renege if waited too long
                     passenger_now.renege()
                     station.psn_waiting_time.append(waiting_limit)
                     station.n_psn_renege += 1
