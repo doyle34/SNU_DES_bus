@@ -4,9 +4,11 @@ import pandas as pd
 import os
 from tqdm import tqdm
 
+# Global Variables -------------------
 n_days = 10
 cost_per_minute = 66.8379
 discount = 0.8  # considering transfer
+# ------------------------------------
 
 total_bus_idt_df = pd.read_csv("bus_data/bus_idt.csv")
 n_cases = int(len(total_bus_idt_df.columns)/2)

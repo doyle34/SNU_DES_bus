@@ -141,7 +141,7 @@ class Bus:
         """
         with self.running.request() as req:
             yield req
-            # print(self.name + ' start driving at ' + str(self.env.now))
+# 1         print(self.name + ' start driving at ' + str(self.env.now))
             for station in self.stations:
                 driving_time_single = normalvariate(station.bus_iat_dist[0], station.bus_iat_dist[1])
                 yield self.env.timeout(driving_time_single)  # bus moves to next station
@@ -149,7 +149,7 @@ class Bus:
                 self.driving_distance += station.distance
                 yield self.env.process(self.arrive(station))  # bus arrives at station[i]
             # bus finishes driving for one cycle
-            # print(self.name + ' finish driving at ' + str(self.env.now))
+# 2         print(self.name + ' finish driving at ' + str(self.env.now))
             real_dispatch_time = max(normalvariate(self.bus_idt_dist[0], self.bus_idt_dist[1])
                                      - normalvariate(self.stations[0].bus_iat_dist[0],
                                                      self.stations[0].bus_iat_dist[1]), 0)
