@@ -74,7 +74,7 @@ for case in range(n_cases):
         daily_waiting_cost_waste = 0
 
         for bus in buses:
-# 4         print(f'{bus.name} transported {bus.psn_cnt} passengers during {bus.driving_time} min')
+# 4         print(f'{bus.name} transported {bus.board_cnt} passengers during {bus.driving_time} min')
             daily_passengers += bus.board_cnt
             daily_driving_time += bus.driving_time
             daily_driving_distance += bus.driving_distance

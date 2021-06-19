@@ -401,7 +401,7 @@ def monitor(env, stations, buses, hour_summaries):
             prev_renege[i] += psn_renege
 
         for i, bus in enumerate(buses):
-            psn_cnt = bus.psn_cnt - prev_cnt[i]
+            psn_cnt = bus.board_cnt - prev_cnt[i]
             driving_time = bus.driving_time - prev_time[i]
             driving_distance = bus.driving_distance - prev_distance[i]
 
